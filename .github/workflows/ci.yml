@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    name: Python — lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Lint
+        run: uv run ruff check packages/
+
+      - name: Format check
+        run: uv run ruff format --check packages/
+
+      - name: Typecheck
+        run: uv run mypy packages/core/src packages/server/src
+
+      - name: Test
+        run: uv run pytest packages/core/tests packages/server/tests -v --cov=packages/core/src --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: github.event_name == 'push'
+        with:
+          file: ./coverage.xml
+
+  ui:
+    name: UI — typecheck, lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        working-directory: packages/ui
+        run: bun install
+
+      - name: Typecheck
+        working-directory: packages/ui
+        run: bun run typecheck
+
+      - name: Build
+        working-directory: packages/ui
+        run: bun run build

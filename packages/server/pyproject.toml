@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autosae-server"
+version = "0.1.0"
+description = "Inference server for AutoSAE activation steering"
+requires-python = ">=3.12"
+dependencies = [
+    "autosae>=0.1.0",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autosae_server"]
+
+[project.scripts]
+autosae-server = "autosae_server.main:main"
+
+[tool.uv.sources]
+autosae = { workspace = true }
